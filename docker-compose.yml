@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  zookeeper:
+    image: zookeeper:3.5
+    container_name: kafka-fundamentals-training-zookeeper
+    hostname: kafka-fundamentals-training-zookeeper
+    ports:
+      - "2181:2181"
+    tty: true
+    restart: always
+    security_opt:
+      - seccomp:unconfined
+
+  kafka:
+    depends_on:
+      - zookeeper
+    image: wurstmeister/kafka:2.13-2.8.1
+    container_name: kafka-fundamentals-training-kafka
+    hostname: kafka-fundamentals-training-kafka
+    ports:
+      - "9092:9092"
+    restart: always
+    environment:
+      KAFKA_PORT: "9092"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'PLAINTEXT:PLAINTEXT'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_SECURITY_INTER_BROKER_PROTOCOL: 'PLAINTEXT'
