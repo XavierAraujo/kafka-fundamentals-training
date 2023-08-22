@@ -15,6 +15,7 @@ public class TransactionsConsumerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(TransactionsConsumerApplication.class, args);
+		while(true) {} // Hack to stop the application from terminating since we have no spring web-server to keep it running
 	}
 
 	@Bean(initMethod = "start")
