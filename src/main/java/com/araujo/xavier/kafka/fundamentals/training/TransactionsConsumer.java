@@ -37,15 +37,24 @@ public class TransactionsConsumer {
             while (true) {
                 kafkaConsumer.subscribe(List.of(topic));
                 ConsumerRecords<String, AccountTransaction> records = kafkaConsumer.poll(consumerTimeoutSec);
+                boolean recordsProcessedSuccessfully = true;
                 for (ConsumerRecord<String, AccountTransaction> record : records) {
                     AccountTransaction accountTransaction = record.value();
-                    handleAccountTransaction(accountTransaction);
+                    boolean recordProcessedSuccessfully = handleAccountTransaction(accountTransaction);
+                    if (!recordProcessedSuccessfully) {
+                        recordsProcessedSuccessfully = false;
+                    }
+                }
+
+                if (recordsProcessedSuccessfully) {
+                    kafkaConsumer.commitSync();
                 }
             }
         }).start();
     }
 
-    private void handleAccountTransaction(AccountTransaction accountTransaction) {
+    private boolean handleAccountTransaction(AccountTransaction accountTransaction) {
         log.info("handling account transaction {}", accountTransaction);
+        return true;
     }
 }
