@@ -4,6 +4,7 @@ import com.araujo.xavier.kafka.fundamentals.training.serialization.JacksonSerial
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
@@ -34,7 +35,14 @@ public class TransactionsProducer {
                 while (true) {
                     AccountTransaction accountTransaction = generateRandomTransactionForAccount();
                     ProducerRecord<String, AccountTransaction> record = transactionToProducerRecord(topic, accountTransaction);
-                    kafkaProducer.send(record);
+                    kafkaProducer.send(record, (RecordMetadata metadata, Exception exception) -> {
+                        if (exception != null) {
+                            log.error("An error as occurred sending message with offset {} for topic {}",
+                                    metadata.offset(), metadata.topic());
+                        }
+                        log.info("Successfully published message with offset {} for partition {} of topic {}",
+                                metadata.offset(), metadata.partition(), metadata.topic());
+                    });
 
 					try {
 						Thread.sleep(1000);
