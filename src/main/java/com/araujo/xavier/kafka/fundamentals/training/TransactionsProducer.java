@@ -34,6 +34,7 @@ public class TransactionsProducer {
                 while (true) {
                     AccountTransaction accountTransaction = generateRandomTransactionForAccount();
                     ProducerRecord<String, AccountTransaction> record = transactionToProducerRecord(topic, accountTransaction);
+                    log.info("producing account transaction {}", accountTransaction);
                     kafkaProducer.send(record);
 
 					try {
