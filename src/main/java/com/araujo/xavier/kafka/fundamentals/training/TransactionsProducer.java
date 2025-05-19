@@ -10,6 +10,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
@@ -35,9 +36,15 @@ public class TransactionsProducer {
                     AccountTransaction accountTransaction = generateRandomTransactionForAccount();
                     ProducerRecord<String, AccountTransaction> record = transactionToProducerRecord(topic, accountTransaction);
                     log.info("producing account transaction {}", accountTransaction);
-                    kafkaProducer.send(record);
+                    try {
+                        var recordMetadata = kafkaProducer.send(record).get();
+                        log.info("produced record for topic '{}' and partition {} with offset {}",
+                                recordMetadata.topic(), recordMetadata.partition(), recordMetadata.offset());
+                    } catch (InterruptedException|ExecutionException e) {
+                        throw new RuntimeException(e);
+                    }
 
-					try {
+                    try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						throw new RuntimeException(e);
